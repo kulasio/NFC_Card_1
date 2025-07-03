@@ -103,4 +103,4 @@ async function main() {
         document.body.innerHTML = '<div style="color:white;text-align:center;margin-top:3rem;font-size:1.5rem;">Card not found or error loading card data.</div>';
     }
 }
-main(); 
+main();
