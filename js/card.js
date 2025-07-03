@@ -1,6 +1,6 @@
 // card.js
 async function fetchCardData(cardUid) {
-    const res = await fetch(`/api/cards/dynamic/${cardUid}`);
+    const res = await fetch(`https://onetapp-backend.onrender.com/api/cards/dynamic/${cardUid}`);
     if (!res.ok) throw new Error('Card not found');
     return await res.json();
 }
