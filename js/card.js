@@ -8,6 +8,10 @@ function getQueryParam(param) {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get(param);
 }
+function bufferToBase64(buffer) {
+    // Convert Buffer { data: [...] } to base64 string
+    return btoa(String.fromCharCode.apply(null, buffer));
+}
 function renderProfile(profile, user) {
     document.getElementById('profileSection').style.display = '';
     document.getElementById('profileName').textContent = profile?.fullName || user.username || '';
@@ -15,8 +19,17 @@ function renderProfile(profile, user) {
     document.getElementById('profileEmail').innerHTML = profile?.contact?.email ? `<i class='fas fa-envelope mr-2'></i>${profile.contact.email}` : '';
     // Profile image
     const profileImg = document.getElementById('profilePicture');
-    if (profile?.profileImage && profile.profileImage.data) {
-        profileImg.src = `data:${profile.profileImage.contentType};base64,${profile.profileImage.data}`;
+    let imgData = profile?.profileImage?.data;
+    if (imgData) {
+        if (typeof imgData === 'object' && Array.isArray(imgData.data)) {
+            // Handle Buffer { data: [...] }
+            imgData = bufferToBase64(imgData.data);
+        }
+        if (typeof imgData === 'string') {
+            profileImg.src = `data:${profile.profileImage.contentType};base64,${imgData}`;
+        } else {
+            profileImg.removeAttribute('src');
+        }
     } else {
         profileImg.removeAttribute('src');
     }
