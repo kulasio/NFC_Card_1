@@ -1,17 +1,114 @@
 /* style.css - Custom styles for NFC Card */
 
-/* Example: Add your custom styles below */
-
 body {
     font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+    background: #f4f6fb;
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
-.bg-gradient-to-b {
-    background: linear-gradient(to bottom, #1976d2, #43a047);
+.card-container {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-.text-primary {
+.card {
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(25, 118, 210, 0.10);
+    padding: 2.5rem 2rem 2rem 2rem;
+    max-width: 350px;
+    width: 100%;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.profile-img-wrapper {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-bottom: 1.2rem;
+    background: #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.profile-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.profile-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0.2rem 0 0.1rem 0;
+    color: #23294a;
+}
+.profile-title {
+    font-size: 1.05rem;
     color: #1976d2;
+    margin-bottom: 0.7rem;
+}
+.profile-email {
+    font-size: 0.98rem;
+    color: #4a5a6a;
+    margin-bottom: 1.1rem;
+}
+.social-links {
+    display: flex;
+    justify-content: center;
+    gap: 1.1rem;
+    margin-bottom: 1.1rem;
+}
+.social-links a {
+    color: #1976d2;
+    font-size: 1.3rem;
+    transition: color 0.2s;
+}
+.social-links a:hover {
+    color: #115293;
+}
+.action-buttons {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    margin-top: 0.5rem;
+}
+.action-buttons a,
+.action-buttons button {
+    background: #1976d2;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.85rem 0;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+    text-decoration: none;
+    margin: 0;
+}
+.action-buttons a:hover,
+.action-buttons button:hover {
+    background: #115293;
+    transform: translateY(-2px) scale(1.03);
+}
+.footer {
+    text-align: center;
+    color: #888;
+    font-size: 0.98rem;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
 }
 
 /* Add more custom styles as needed */ 

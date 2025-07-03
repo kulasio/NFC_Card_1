@@ -7,24 +7,22 @@
     <link href="css/style.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body class="min-h-screen bg-gradient-to-b from-primary to-secondary">
-    <div class="min-h-screen flex flex-col">
-        <main class="flex-grow flex flex-col items-center justify-center p-6 text-white">
-            <div id="profileSection" class="w-full max-w-sm bg-white/10 backdrop-blur-lg rounded-2xl p-8 mb-8 text-center" style="display:none;">
-                <div class="w-32 h-32 mx-auto mb-6 rounded-full overflow-hidden">
-                    <img id="profilePicture" alt="Profile Picture" class="w-full h-full object-cover" style="background:#e5e7eb;" />
-                </div>
-                <h1 id="profileName" class="text-2xl font-bold mb-2"></h1>
-                <p id="profileTitle" class="text-lg mb-4"></p>
-                <div id="socialLinks" class="flex justify-center space-x-4 mb-6"></div>
-                <p id="profileEmail" class="text-sm text-white/80"></p>
+<body>
+    <div class="card-container">
+        <div id="profileSection" class="card" style="display:none;">
+            <div class="profile-img-wrapper">
+                <img id="profilePicture" alt="Profile Picture" class="profile-img" />
             </div>
-            <div id="actionButtons" class="w-full max-w-sm space-y-4" style="display:none;"></div>
-        </main>
-        <footer class="p-4 text-center text-white/60 text-sm">
-            <p>Made with <3 by Nikko Mission.</p>
-        </footer>
+            <h1 id="profileName" class="profile-name"></h1>
+            <p id="profileTitle" class="profile-title"></p>
+            <div id="socialLinks" class="social-links"></div>
+            <p id="profileEmail" class="profile-email"></p>
+            <div id="actionButtons" class="action-buttons" style="display:none;"></div>
+        </div>
     </div>
+    <footer class="footer">
+        <p>Made with <span style="color:#e57373;">♥</span> by Nikko Mission.</p>
+    </footer>
     <script src="js/card.js"></script>
 </body>
 </html> 
