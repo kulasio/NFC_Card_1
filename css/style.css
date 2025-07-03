@@ -1,0 +1,17 @@
+/* style.css - Custom styles for NFC Card */
+
+/* Example: Add your custom styles below */
+
+body {
+    font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+}
+
+.bg-gradient-to-b {
+    background: linear-gradient(to bottom, #1976d2, #43a047);
+}
+
+.text-primary {
+    color: #1976d2;
+}
+
+/* Add more custom styles as needed */ 
