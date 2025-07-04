@@ -38,7 +38,18 @@ function renderProfile(profile, user) {
     const socialIcons = {
         linkedin: 'fab fa-linkedin',
         github: 'fab fa-github',
-        twitter: 'fab fa-twitter'
+        twitter: 'fab fa-twitter',
+        facebook: 'fab fa-facebook',
+        instagram: 'fab fa-instagram',
+        tiktok: 'fab fa-tiktok',
+        youtube: 'fab fa-youtube',
+        whatsapp: 'fab fa-whatsapp',
+        telegram: 'fab fa-telegram',
+        snapchat: 'fab fa-snapchat',
+        pinterest: 'fab fa-pinterest',
+        reddit: 'fab fa-reddit',
+        website: 'fas fa-globe',
+        other: 'fas fa-link'
     };
     const socialLinksDiv = document.getElementById('socialLinks');
     socialLinksDiv.innerHTML = '';
