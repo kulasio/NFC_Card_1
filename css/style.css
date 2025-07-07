@@ -142,10 +142,11 @@ body {
 @media (max-width: 600px) {
     .card {
         max-width: 100vw;
-        min-height: unset; /* Remove forced height */
-        border-radius: 0;
-        padding: 2.2rem 0.7rem 1.2rem 0.7rem; /* More top padding */
-        margin: 0; /* Remove top margin */
+        min-height: unset;
+        border-radius: 18px; /* Restore rounded corners */
+        padding: 2.2rem 0.7rem 1.2rem 0.7rem;
+        margin: 1.2rem 0.5rem 0 0.5rem; /* Add side margins */
+        box-sizing: border-box;
     }
     .profile-img-wrapper {
         width: 90px;
