@@ -16,6 +16,7 @@ function renderProfile(profile, user) {
     document.getElementById('profileSection').style.display = '';
     document.getElementById('profileName').textContent = profile?.fullName || user.username || '';
     document.getElementById('profileTitle').textContent = profile?.jobTitle || '';
+    document.getElementById('profileBio').textContent = profile?.bio || '';
     document.getElementById('profileEmail').innerHTML = profile?.contact?.email ? `<i class='fas fa-envelope mr-2'></i>${profile.contact.email}` : '';
     // Profile image
     const profileImg = document.getElementById('profilePicture');
