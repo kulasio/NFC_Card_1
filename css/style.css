@@ -35,6 +35,7 @@ body {
     align-items: center;
     min-height: 70vh;
     margin: 2.5rem 1rem 0 1rem;
+    margin-top: 2.5rem; /* Add more space above card */
 }
 
 .profile-img-wrapper {
@@ -42,6 +43,7 @@ body {
     height: 120px;
     border-radius: 50%;
     overflow: hidden;
+    margin-top: 0.5rem; /* Add space above image */
     margin-bottom: 1.2rem;
     background: #e5e7eb;
     display: flex;
@@ -78,14 +80,14 @@ body {
 .profile-email {
     font-size: 1.02rem;
     color: #4a5a6a;
-    margin-bottom: 1.1rem;
+    margin-bottom: 1.3rem; /* More space below email */
     word-break: break-all;
 }
 .social-links {
     display: flex;
     justify-content: center;
     gap: 1.1rem;
-    margin-bottom: 1.1rem;
+    margin-bottom: 1.3rem; /* More space below icons */
     flex-wrap: nowrap;
     overflow-x: auto;
 }
@@ -142,12 +144,13 @@ body {
         max-width: 100vw;
         min-height: 100vh;
         border-radius: 0;
-        padding: 1.5rem 0.5rem 1.2rem 0.5rem;
+        padding: 1.5rem 0.7rem 1.2rem 0.7rem; /* More side padding */
         margin: 1.2rem 0 0 0;
     }
     .profile-img-wrapper {
         width: 90px;
         height: 90px;
+        margin-top: 0.5rem;
     }
     .profile-name {
         font-size: 1.15rem;
@@ -164,6 +167,13 @@ body {
         padding: 0.8rem 0;
     }
     .social-links {
+        flex-wrap: wrap; /* Allow icons to wrap */
+        justify-content: center;
         gap: 0.7rem;
+        margin-bottom: 1.1rem;
+        overflow-x: visible;
+    }
+    .footer {
+        margin-bottom: 2rem;
     }
 } 
