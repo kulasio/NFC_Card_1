@@ -27,8 +27,8 @@ function populateCard(apiData) {
 
         // Profile image
         const img = document.getElementById('profileImage');
-        if (profile && profile.profileImage && profile.profileImage.data) {
-            const base64 = bufferToBase64(profile.profileImage);
+        if (profile && profile.profileImage && profile.profileImage.data && profile.profileImage.data.data) {
+            const base64 = bufferToBase64({ data: profile.profileImage.data.data });
             img.src = `data:image/jpeg;base64,${base64}`;
         } else {
             img.src = '';
