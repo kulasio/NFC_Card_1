@@ -65,7 +65,7 @@ function populateCard(apiData) {
             }
         }
 
-        // Actions (e.g., Save contact, Book now) - placeholder, customize as needed
+        // Actions (e.g., Save contact, Book now)
         const actionsDiv = document.getElementById('profileActions');
         actionsDiv.innerHTML = '';
         // Add Save Contact button if email exists
@@ -76,6 +76,34 @@ function populateCard(apiData) {
         if (profile?.contact?.email || user?.email) {
             const email = profile?.contact?.email || user?.email;
             actionsDiv.innerHTML += `<a href="mailto:${email}" class="btn btn-dark w-50"><i class='fas fa-calendar-alt me-2'></i>Book now</a>`;
+        }
+
+        // Attach the click handler for Save Contact button
+        const saveBtn = document.getElementById('saveContactBtn');
+        if (saveBtn) {
+            saveBtn.onclick = function() {
+                const vcard = `
+BEGIN:VCARD
+VERSION:3.0
+N:${profile?.fullName || user?.username || ''}
+FN:${profile?.fullName || user?.username || ''}
+TITLE:${profile?.jobTitle || ''}
+ORG:${profile?.company || ''}
+EMAIL;type=WORK,INTERNET:${profile?.contact?.email || user?.email || ''}
+TEL;type=WORK,VOICE:${profile?.contact?.phone || ''}
+NOTE:Saved from NFC Card
+END:VCARD
+                `.trim();
+                const blob = new Blob([vcard], { type: 'text/vcard' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${profile?.fullName || user?.username || 'contact'}.vcf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            };
         }
 
         // Featured links
