@@ -9,16 +9,19 @@
 </head>
 <body>
     <div class="card-container">
-        <div id="profileSection" class="card" style="display:none;">
+        <!-- Profile Card Section -->
+        <div id="profileSection" class="card hidden">
             <div class="profile-img-wrapper">
-                <img id="profilePicture" alt="Profile Picture" class="profile-img" />
+                <img id="profilePicture" alt="Profile picture of user" class="profile-img" />
             </div>
             <h1 id="profileName" class="profile-name"></h1>
+            <!-- Card ID placeholder -->
+            <p id="cardId" class="card-id"></p>
             <p id="profileTitle" class="profile-title"></p>
             <p id="profileBio" class="profile-bio"></p>
-            <div id="socialLinks" class="social-links"></div>
+            <div id="socialLinks" class="social-links" aria-label="Social media links"></div>
             <p id="profileEmail" class="profile-email"></p>
-            <div id="actionButtons" class="action-buttons" style="display:none;"></div>
+            <div id="actionButtons" class="action-buttons hidden"></div>
         </div>
     </div>
     <footer class="footer">

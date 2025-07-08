@@ -12,9 +12,13 @@ function bufferToBase64(buffer) {
     // Convert Buffer { data: [...] } to base64 string
     return btoa(String.fromCharCode.apply(null, buffer));
 }
-function renderProfile(profile, user) {
-    document.getElementById('profileSection').style.display = '';
+function renderProfile(profile, user, card) {
+    // Show card using .hidden class
+    const profileSection = document.getElementById('profileSection');
+    profileSection.classList.remove('hidden');
     document.getElementById('profileName').textContent = profile?.fullName || user.username || '';
+    // Card ID
+    document.getElementById('cardId').textContent = card?.cardUid || '';
     document.getElementById('profileTitle').textContent = profile?.jobTitle || '';
     document.getElementById('profileBio').textContent = profile?.bio || '';
     document.getElementById('profileEmail').innerHTML = profile?.contact?.email ? `<i class='fas fa-envelope mr-2'></i>${profile.contact.email}` : '';
@@ -59,7 +63,6 @@ function renderProfile(profile, user) {
             const a = document.createElement('a');
             a.href = socialLinks[key];
             a.target = '_blank';
-            a.className = 'text-white hover:text-gray-200';
             a.innerHTML = `<i class='${icon} text-xl'></i>`;
             socialLinksDiv.appendChild(a);
         }
@@ -67,7 +70,7 @@ function renderProfile(profile, user) {
 }
 function renderActions(profile, user) {
     const actionsDiv = document.getElementById('actionButtons');
-    actionsDiv.style.display = '';
+    actionsDiv.classList.remove('hidden');
     actionsDiv.innerHTML = '';
     // Website
     if (profile?.website) {
@@ -109,7 +112,7 @@ async function main() {
     }
     try {
         const { card, user, profile } = (await fetchCardData(cardUid));
-        renderProfile(profile, user);
+        renderProfile(profile, user, card);
         renderActions(profile, user);
     } catch (err) {
         document.body.innerHTML = '<div style="color:white;text-align:center;margin-top:3rem;font-size:1.5rem;">Card not found or error loading card data.</div>';
