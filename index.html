@@ -4,58 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Digital NFC Card</title>
-    <!-- Bootstrap 5 CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="css/style.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <div class="container d-flex justify-content-center align-items-start min-vh-100">
-        <div class="card w-100">
-            <img id="profilePicture" alt="Profile" class="profile-img-top">
-            <div class="card-body">
-                <h4 class="card-title mb-1 fw-bold" id="profileName">
-                    <span class="text-warning"><i class="fas fa-certificate"></i></span>
-                </h4>
-                <div class="mb-1 text-secondary" id="profileTitle"></div>
-                <div class="mb-3 text-muted" id="profileLocation"></div>
-                <div class="card-social mb-3" id="socialLinks"></div>
-                <div class="d-flex gap-2 mb-4" id="actionButtons" style="display:none;"></div>
-                <div class="card-section-label">Bio</div>
-                <div class="mb-3" id="profileBio"></div>
-                <div class="card-section-label">Featured</div>
-                <div class="d-flex gap-2 flex-wrap align-items-center card-featured" id="featuredLinks">
-                    <!-- Featured links will be populated by JavaScript -->
-                </div>
-                <div class="card-section-label">Gallery</div>
-                <div class="card-gallery mb-3" id="gallerySection">
-                    <!-- Gallery items will be populated by JavaScript -->
-                </div>
-                <div class="card-section-label">Recent Activity</div>
-                <div class="mb-2" id="recentActivity">
-                    <!-- Recent activity will be populated by JavaScript -->
-                </div>
+    <div class="card-container">
+        <div id="profileSection" class="card" style="display:none;">
+            <div class="profile-img-wrapper">
+                <img id="profilePicture" alt="Profile Picture" class="profile-img" />
             </div>
-            <div class="text-center mt-4 mb-3" style="color: #888; font-size: 1rem; letter-spacing: 0.01em;">
-                made with <span>💜</span> by Nikko Mission
-            </div>
+            <h1 id="profileName" class="profile-name"></h1>
+            <p id="profileTitle" class="profile-title"></p>
+            <p id="profileBio" class="profile-bio"></p>
+            <div id="socialLinks" class="social-links"></div>
+            <p id="profileEmail" class="profile-email"></p>
+            <div id="actionButtons" class="action-buttons" style="display:none;"></div>
         </div>
     </div>
-    <!-- Modal for Viewing All Featured/Custom Links -->
-    <div class="modal fade" id="addFeaturedModal" tabindex="-1" aria-labelledby="addFeaturedModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="addFeaturedModalLabel">All Featured/Custom Links</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body" id="modalFeaturedLinks">
-            <!-- Modal content will be populated by JavaScript -->
-          </div>
-        </div>
-      </div>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <footer class="footer">
+        <p>Made with <span style="color:#e57373;">♥</span> by Nikko Mission.</p>
+    </footer>
     <script src="js/card.js"></script>
 </body>
 </html> 
