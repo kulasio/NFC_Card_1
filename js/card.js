@@ -1,121 +1,120 @@
 // card.js
-async function fetchCardData(cardUid) {
-    const res = await fetch(`https://onetapp-backend.onrender.com/api/cards/dynamic/${cardUid}`);
-    if (!res.ok) throw new Error('Card is not found');
-    return await res.json();
-}
+
+// Helper: Get cardUid from URL
 function getQueryParam(param) {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get(param);
 }
-function bufferToBase64(buffer) {
-    // Convert Buffer { data: [...] } to base64 string
-    return btoa(String.fromCharCode.apply(null, buffer));
+
+// Fetch card data from backend
+async function fetchCardData(cardUid) {
+    const res = await fetch(`/api/cards/dynamic/${cardUid}`);
+    if (!res.ok) throw new Error('Card not found');
+    return await res.json();
 }
-function renderProfile(profile, user, card) {
-    // Show card using .hidden class
-    const profileSection = document.getElementById('profileSection');
-    profileSection.classList.remove('hidden');
-    document.getElementById('profileName').textContent = profile?.fullName || user.username || '';
-    // Card ID
-    document.getElementById('cardId').textContent = card?.cardUid || '';
-    document.getElementById('profileTitle').textContent = profile?.jobTitle || '';
-    document.getElementById('profileBio').textContent = profile?.bio || '';
-    document.getElementById('profileEmail').innerHTML = profile?.contact?.email ? `<i class='fas fa-envelope mr-2'></i>${profile.contact.email}` : '';
+
+// Populate the card fields
+function populateCard(card) {
     // Profile image
-    const profileImg = document.getElementById('profilePicture');
-    let imgData = profile?.profileImage?.data;
-    if (imgData) {
-        if (typeof imgData === 'object' && Array.isArray(imgData.data)) {
-            // Handle Buffer { data: [...] }
-            imgData = bufferToBase64(imgData.data);
-        }
-        if (typeof imgData === 'string') {
-            profileImg.src = `data:${profile.profileImage.contentType};base64,${imgData}`;
-        } else {
-            profileImg.removeAttribute('src');
-        }
-    } else {
-        profileImg.removeAttribute('src');
-    }
+    const img = document.getElementById('profileImage');
+    img.src = card.profileImage || '';
+    img.alt = card.fullName || 'Profile';
+
+    // Name & verification
+    document.getElementById('profileName').innerHTML = `${card.fullName || ''} <span class="text-warning" id="profileVerified">${card.verified ? '<i class=\'fas fa-certificate\'></i>' : ''}</span>`;
+
+    // Title, location, bio
+    document.getElementById('profileTitle').textContent = card.title || '';
+    document.getElementById('profileLocation').textContent = card.location || '';
+    document.getElementById('profileBio').textContent = card.bio || '';
+
     // Social links
-    const socialLinks = profile?.socialLinks || {};
-    const socialIcons = {
-        linkedin: 'fab fa-linkedin',
-        github: 'fab fa-github',
-        twitter: 'fab fa-twitter',
-        facebook: 'fab fa-facebook',
-        instagram: 'fab fa-instagram',
-        tiktok: 'fab fa-tiktok',
-        youtube: 'fab fa-youtube',
-        whatsapp: 'fab fa-whatsapp',
-        telegram: 'fab fa-telegram',
-        snapchat: 'fab fa-snapchat',
-        pinterest: 'fab fa-pinterest',
-        reddit: 'fab fa-reddit',
-        website: 'fas fa-globe',
-        other: 'fas fa-link'
-    };
-    const socialLinksDiv = document.getElementById('socialLinks');
+    const socialLinksDiv = document.getElementById('profileSocialLinks');
     socialLinksDiv.innerHTML = '';
-    Object.entries(socialIcons).forEach(([key, icon]) => {
-        if (socialLinks[key]) {
-            const a = document.createElement('a');
-            a.href = socialLinks[key];
-            a.target = '_blank';
-            a.innerHTML = `<i class='${icon} text-xl'></i>`;
-            socialLinksDiv.appendChild(a);
+    if (card.socialLinks) {
+        for (const [platform, url] of Object.entries(card.socialLinks)) {
+            if (url) {
+                const iconMap = {
+                    linkedin: 'fab fa-linkedin',
+                    github: 'fab fa-github',
+                    twitter: 'fab fa-twitter',
+                    facebook: 'fab fa-facebook',
+                    youtube: 'fab fa-youtube',
+                    instagram: 'fab fa-instagram',
+                    tiktok: 'fab fa-tiktok',
+                    website: 'fas fa-globe',
+                };
+                const icon = iconMap[platform] || 'fas fa-link';
+                socialLinksDiv.innerHTML += `<a href="${url}" target="_blank"><i class="${icon}"></i></a>`;
+            }
         }
-    });
-}
-function renderActions(profile, user) {
-    const actionsDiv = document.getElementById('actionButtons');
-    actionsDiv.classList.remove('hidden');
+    }
+
+    // Actions (e.g., Save contact, Book now)
+    const actionsDiv = document.getElementById('profileActions');
     actionsDiv.innerHTML = '';
-    // Website
-    if (profile?.website) {
-        actionsDiv.innerHTML += `<a href="${profile.website}" target="_blank" class="block w-full bg-white text-primary py-4 px-6 rounded-xl font-semibold text-center hover:bg-gray-100 transition duration-300"><i class='fas fa-globe mr-2'></i>Visit Website</a>`;
+    if (card.actions) {
+        card.actions.forEach(action => {
+            actionsDiv.innerHTML += `<button class="btn btn-dark w-50">${action.icon ? `<i class='${action.icon} me-2'></i>` : ''}${action.label}</button>`;
+        });
     }
-    // Save Contact (vCard)
-    if (profile?.contact?.email || user.email) {
-        actionsDiv.innerHTML += `<button id="saveContactBtn" class="block w-full bg-white/10 backdrop-blur-lg text-white py-4 px-6 rounded-xl font-semibold text-center hover:bg-white/20 transition duration-300"><i class='fas fa-address-card mr-2'></i>Save Contact</button>`;
-    }
-    // Send Email
-    if (profile?.contact?.email || user.email) {
-        const email = profile?.contact?.email || user.email;
-        actionsDiv.innerHTML += `<a href="mailto:${email}" class="block w-full bg-white/10 backdrop-blur-lg text-white py-4 px-6 rounded-xl font-semibold text-center hover:bg-white/20 transition duration-300"><i class='fas fa-envelope mr-2'></i>Send Email</a>`;
-    }
-    // Add Save Contact logic
-    setTimeout(() => {
-        const saveBtn = document.getElementById('saveContactBtn');
-        if (saveBtn) {
-            saveBtn.onclick = function() {
-                const vcard = `BEGIN:VCARD\nVERSION:3.0\nN:${profile?.fullName || user.username}\\nFN:${profile?.fullName || user.username}\nTITLE:${profile?.jobTitle || ''}\nORG:${profile?.company || ''}\nEMAIL;type=WORK,INTERNET:${profile?.contact?.email || user.email}\nTEL;type=WORK,VOICE:${profile?.contact?.phone || ''}\nURL:${profile?.website || ''}\nNOTE:Digital NFC Card\nEND:VCARD`;
-                const blob = new Blob([vcard], { type: 'text/vcard' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `${profile?.fullName || user.username}.vcf`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            };
+
+    // Featured links
+    const featuredDiv = document.getElementById('profileFeaturedLinks');
+    featuredDiv.innerHTML = '';
+    if (card.featuredLinks) {
+        card.featuredLinks.slice(0, 3).forEach(link => {
+            featuredDiv.innerHTML += `<a href="${link.url}" class="btn">${link.label}</a>`;
+        });
+        if (card.featuredLinks.length > 3) {
+            featuredDiv.innerHTML += `<button class="badge bg-light text-dark px-3 py-2 border-0" style="font-size:0.97rem; border-radius:0.7rem; display: flex; align-items: center; cursor:pointer;" data-bs-toggle="modal" data-bs-target="#addFeaturedModal" title="Show more featured links">+${card.featuredLinks.length - 3} more</button>`;
         }
-    }, 100);
+    }
+    // All featured links in modal
+    const allFeaturedDiv = document.getElementById('profileAllFeaturedLinks');
+    allFeaturedDiv.innerHTML = '';
+    if (card.featuredLinks) {
+        card.featuredLinks.forEach(link => {
+            allFeaturedDiv.innerHTML += `<a href="${link.url}" class="btn btn-light">${link.label}</a>`;
+        });
+    }
+
+    // Gallery
+    const galleryDiv = document.getElementById('profileGallery');
+    galleryDiv.innerHTML = '';
+    if (card.gallery) {
+        card.gallery.forEach(item => {
+            galleryDiv.innerHTML += `
+                <div${item.video ? ' style="position: relative;"' : ''}>
+                    <img src="${item.img}" alt="${item.caption || ''}" />
+                    ${item.video ? `<span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; color: white; background: rgba(0,0,0,0.5); border-radius: 50%; padding: 0.3em 0.45em;"><i class='fas fa-play'></i></span>` : ''}
+                    <div style="font-size: 0.9rem; color: #333; text-align: center;">${item.caption || ''}</div>
+                </div>
+            `;
+        });
+    }
+
+    // Recent activity
+    const activityDiv = document.getElementById('profileRecentActivity');
+    activityDiv.innerHTML = '';
+    if (card.recentActivity) {
+        card.recentActivity.forEach(item => {
+            activityDiv.innerHTML += `<div class="recent-activity-item"><i class="${item.icon} recent-activity-icon"></i><span>${item.text}</span></div>`;
+        });
+    }
 }
-async function main() {
+
+// Main
+(async function() {
     const cardUid = getQueryParam('cardUid');
     if (!cardUid) {
-        alert('No cardUid specified in URL.');
+        document.body.innerHTML = '<div style="color:#333;text-align:center;margin-top:3rem;font-size:1.5rem;">No cardUid specified in URL.</div>';
         return;
     }
     try {
-        const { card, user, profile } = (await fetchCardData(cardUid));
-        renderProfile(profile, user, card);
-        renderActions(profile, user);
+        const card = await fetchCardData(cardUid);
+        populateCard(card);
     } catch (err) {
-        document.body.innerHTML = '<div style="color:white;text-align:center;margin-top:3rem;font-size:1.5rem;">Card not found or error loading card data.</div>';
+        document.body.innerHTML = '<div style="color:#333;text-align:center;margin-top:3rem;font-size:1.5rem;">Card not found or error loading card data.</div>';
     }
-}
-main();
+})();
