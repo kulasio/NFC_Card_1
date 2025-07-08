@@ -8,7 +8,7 @@ function getQueryParam(param) {
 
 // Fetch card data from backend
 async function fetchCardData(cardUid) {
-    const res = await fetch(`/api/cards/dynamic/${cardUid}`);
+    const res = await fetch('http://onetapp-backend.onrender.com/api/cards/dynamic/' + cardUid);
     if (!res.ok) throw new Error('Card not found');
     return await res.json();
 }
