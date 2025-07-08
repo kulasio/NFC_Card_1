@@ -72,10 +72,9 @@ function populateCard(apiData) {
         if (profile?.contact?.email || user?.email) {
             actionsDiv.innerHTML += `<button id="saveContactBtn" class="btn btn-dark w-50"><i class='fas fa-address-card me-2'></i>Save contact</button>`;
         }
-        // Add Book Now button to open email client
+        // Add Book Now button to open modal
         if (profile?.contact?.email || user?.email) {
-            const email = profile?.contact?.email || user?.email;
-            actionsDiv.innerHTML += `<a href="mailto:${email}" class="btn btn-dark w-50"><i class='fas fa-calendar-alt me-2'></i>Book now</a>`;
+            actionsDiv.innerHTML += `<button id="bookNowBtn" class="btn btn-dark w-50"><i class='fas fa-calendar-alt me-2'></i>Book now</button>`;
         }
 
         // Attach the click handler for Save Contact button
@@ -103,6 +102,30 @@ END:VCARD
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
+            };
+        }
+
+        // Attach the click handler for Book Now button to open modal
+        const bookNowBtn = document.getElementById('bookNowBtn');
+        if (bookNowBtn) {
+            bookNowBtn.onclick = function() {
+                const modal = new bootstrap.Modal(document.getElementById('bookNowModal'));
+                modal.show();
+            };
+        }
+
+        // Handle booking form submission
+        const bookNowForm = document.getElementById('bookNowForm');
+        if (bookNowForm) {
+            bookNowForm.onsubmit = function(e) {
+                e.preventDefault();
+                document.getElementById('bookNowThankYou').style.display = '';
+                setTimeout(() => {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('bookNowModal'));
+                    if (modal) modal.hide();
+                    bookNowForm.reset();
+                    document.getElementById('bookNowThankYou').style.display = 'none';
+                }, 2000);
             };
         }
 
