@@ -68,13 +68,14 @@ function populateCard(apiData) {
         // Actions (e.g., Save contact, Book now) - placeholder, customize as needed
         const actionsDiv = document.getElementById('profileActions');
         actionsDiv.innerHTML = '';
-        // Example: Add Save Contact button if email exists
-        if (profile?.contact?.email) {
-            actionsDiv.innerHTML += `<button class="btn btn-dark w-50"><i class='fas fa-address-card me-2'></i>Save contact</button>`;
+        // Add Save Contact button if email exists
+        if (profile?.contact?.email || user?.email) {
+            actionsDiv.innerHTML += `<button id="saveContactBtn" class="btn btn-dark w-50"><i class='fas fa-address-card me-2'></i>Save contact</button>`;
         }
-        // Example: Add Book Now button if booking link exists
-        if (profile?.bookingUrl) {
-            actionsDiv.innerHTML += `<a href="${profile.bookingUrl}" class="btn btn-dark w-50"><i class='fas fa-calendar-alt me-2'></i>Book now</a>`;
+        // Add Book Now button to open email client
+        if (profile?.contact?.email || user?.email) {
+            const email = profile?.contact?.email || user?.email;
+            actionsDiv.innerHTML += `<a href="mailto:${email}" class="btn btn-dark w-50"><i class='fas fa-calendar-alt me-2'></i>Book now</a>`;
         }
 
         // Featured links
