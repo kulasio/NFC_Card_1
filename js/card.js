@@ -154,13 +154,26 @@ END:VCARD
         galleryDiv.innerHTML = '';
         if (profile?.gallery) {
             profile.gallery.forEach(item => {
-                galleryDiv.innerHTML += `
-                    <div${item.video ? ' style="position: relative;"' : ''}>
-                        <img src="${item.url}" alt="${item.title || ''}" />
-                        ${item.video ? `<span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; color: white; background: rgba(0,0,0,0.5); border-radius: 50%; padding: 0.3em 0.45em;"><i class='fas fa-play'></i></span>` : ''}
-                        <div style="font-size: 0.9rem; color: #333; text-align: center;">${item.caption || ''}</div>
-                    </div>
-                `;
+                if (item.type === 'video') {
+                    galleryDiv.innerHTML += `
+                        <div style="position: relative;">
+                            <a href="${item.url}" target="_blank">
+                                <img src="${item.thumbnail || ''}" alt="${item.title || ''}" />
+                                <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; color: white; background: rgba(0,0,0,0.5); border-radius: 50%; padding: 0.3em 0.45em;">
+                                    <i class='fas fa-play'></i>
+                                </span>
+                            </a>
+                            <div style="font-size: 0.9rem; color: #333; text-align: center;">${item.title || ''}</div>
+                        </div>
+                    `;
+                } else {
+                    galleryDiv.innerHTML += `
+                        <div>
+                            <img src="${item.url}" alt="${item.title || ''}" />
+                            <div style="font-size: 0.9rem; color: #333; text-align: center;">${item.title || ''}</div>
+                        </div>
+                    `;
+                }
             });
         }
 
