@@ -156,7 +156,7 @@ END:VCARD
             profile.gallery.forEach(item => {
                 galleryDiv.innerHTML += `
                     <div${item.video ? ' style="position: relative;"' : ''}>
-                        <img src="${item.img}" alt="${item.caption || ''}" />
+                        <img src="${item.url}" alt="${item.title || ''}" />
                         ${item.video ? `<span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; color: white; background: rgba(0,0,0,0.5); border-radius: 50%; padding: 0.3em 0.45em;"><i class='fas fa-play'></i></span>` : ''}
                         <div style="font-size: 0.9rem; color: #333; text-align: center;">${item.caption || ''}</div>
                     </div>
