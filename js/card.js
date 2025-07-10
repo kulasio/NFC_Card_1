@@ -185,7 +185,7 @@ END:VCARD
             });
         }
 
-        // Add popup modal for gallery images
+        // Add popup modal for gallery images (ENHANCED)
         let popupModal = document.getElementById('galleryImageModal');
         if (!popupModal) {
             popupModal = document.createElement('div');
@@ -194,27 +194,97 @@ END:VCARD
             popupModal.tabIndex = -1;
             popupModal.innerHTML = `
                 <div class="modal-dialog modal-dialog-centered">
-                  <div class="modal-content bg-transparent border-0">
-                    <div class="modal-body p-0 d-flex justify-content-center align-items-center" style="position:relative;">
-                      <img id="galleryModalImg" src="" alt="Enlarged" style="max-width:90vw; max-height:80vh; border-radius:1rem; box-shadow:0 2px 16px rgba(0,0,0,0.25); background:#fff;" />
-                      <button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close" style="z-index:2;"></button>
+                  <div class="modal-content bg-transparent border-0" style="box-shadow:none;">
+                    <div class="modal-body p-0 d-flex flex-column justify-content-center align-items-center position-relative" style="background:rgba(0,0,0,0.85); border-radius:1.2rem; min-width:320px; min-height:320px;">
+                      <button type="button" class="btn-close position-absolute top-0 end-0 m-3 z-2" data-bs-dismiss="modal" aria-label="Close" style="filter:invert(1);"></button>
+                      <button id="galleryPrevBtn" class="btn position-absolute top-50 start-0 translate-middle-y ms-2 z-2" style="background:rgba(0,0,0,0.4); color:#fff; border-radius:50%; width:2.5rem; height:2.5rem; display:none;"><i class="fas fa-chevron-left"></i></button>
+                      <button id="galleryNextBtn" class="btn position-absolute top-50 end-0 translate-middle-y me-2 z-2" style="background:rgba(0,0,0,0.4); color:#fff; border-radius:50%; width:2.5rem; height:2.5rem; display:none;"><i class="fas fa-chevron-right"></i></button>
+                      <img id="galleryModalImg" src="" alt="Enlarged" style="max-width:90vw; max-height:70vh; border-radius:1rem; box-shadow:0 2px 16px rgba(0,0,0,0.25); background:#fff; transition:transform 0.25s cubic-bezier(.4,2,.6,1); transform:scale(0.85); opacity:0;" />
+                      <div id="galleryModalCaption" class="text-white text-center mt-3 mb-1" style="font-size:1.1rem; font-weight:500;"></div>
+                      <div id="galleryModalCount" class="text-white text-center mb-2" style="font-size:0.95rem; opacity:0.7;"></div>
                     </div>
                   </div>
                 </div>
             `;
             document.body.appendChild(popupModal);
         }
+        // Store gallery images for navigation
+        let galleryImages = [];
+        let galleryTitles = [];
+        if (profile?.gallery) {
+            profile.gallery.forEach(item => {
+                if (item.type !== 'video') {
+                    galleryImages.push(item.url);
+                    galleryTitles.push(item.title || '');
+                }
+            });
+        }
+        let currentImgIdx = 0;
+        function showGalleryModal(idx) {
+            const modalImg = document.getElementById('galleryModalImg');
+            const caption = document.getElementById('galleryModalCaption');
+            const count = document.getElementById('galleryModalCount');
+            modalImg.src = galleryImages[idx];
+            caption.textContent = galleryTitles[idx] || '';
+            count.textContent = `${idx+1} of ${galleryImages.length}`;
+            currentImgIdx = idx;
+            // Show/hide arrows
+            document.getElementById('galleryPrevBtn').style.display = (idx > 0) ? '' : 'none';
+            document.getElementById('galleryNextBtn').style.display = (idx < galleryImages.length-1) ? '' : 'none';
+            // Animate zoom-in
+            setTimeout(() => {
+                modalImg.style.transform = 'scale(1)';
+                modalImg.style.opacity = '1';
+            }, 80);
+        }
         // Attach click event to gallery images
         setTimeout(() => {
-            document.querySelectorAll('.gallery-img-popup').forEach(img => {
+            document.querySelectorAll('.gallery-img-popup').forEach((img, idx) => {
                 img.addEventListener('click', function() {
-                    const src = this.getAttribute('src');
                     const modalImg = document.getElementById('galleryModalImg');
-                    modalImg.src = src;
+                    modalImg.style.transform = 'scale(0.85)';
+                    modalImg.style.opacity = '0';
+                    showGalleryModal(idx);
                     const modal = new bootstrap.Modal(document.getElementById('galleryImageModal'));
                     modal.show();
                 });
             });
+            // Navigation arrows
+            document.getElementById('galleryPrevBtn').onclick = function(e) {
+                e.stopPropagation();
+                if (currentImgIdx > 0) {
+                    const modalImg = document.getElementById('galleryModalImg');
+                    modalImg.style.transform = 'scale(0.85)';
+                    modalImg.style.opacity = '0';
+                    setTimeout(() => showGalleryModal(currentImgIdx-1), 120);
+                }
+            };
+            document.getElementById('galleryNextBtn').onclick = function(e) {
+                e.stopPropagation();
+                if (currentImgIdx < galleryImages.length-1) {
+                    const modalImg = document.getElementById('galleryModalImg');
+                    modalImg.style.transform = 'scale(0.85)';
+                    modalImg.style.opacity = '0';
+                    setTimeout(() => showGalleryModal(currentImgIdx+1), 120);
+                }
+            };
+            // Keyboard navigation
+            document.getElementById('galleryImageModal').addEventListener('shown.bs.modal', function() {
+                document.addEventListener('keydown', galleryKeyHandler);
+            });
+            document.getElementById('galleryImageModal').addEventListener('hidden.bs.modal', function() {
+                document.removeEventListener('keydown', galleryKeyHandler);
+            });
+            function galleryKeyHandler(e) {
+                if (e.key === 'ArrowLeft' && currentImgIdx > 0) {
+                    document.getElementById('galleryPrevBtn').click();
+                } else if (e.key === 'ArrowRight' && currentImgIdx < galleryImages.length-1) {
+                    document.getElementById('galleryNextBtn').click();
+                } else if (e.key === 'Escape') {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('galleryImageModal'));
+                    if (modal) modal.hide();
+                }
+            }
         }, 100);
 
         // Recent activity
