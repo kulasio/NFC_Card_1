@@ -27,11 +27,19 @@ function populateCard(apiData) {
 
         // Profile image
         const img = document.getElementById('profileImage');
-        if (profile && profile.profileImage && profile.profileImage.data && profile.profileImage.data.data) {
-            const base64 = bufferToBase64({ data: profile.profileImage.data.data });
-            img.src = `data:image/jpeg;base64,${base64}`;
+        if (profile && profile.profileImage) {
+            if (profile.profileImage.data && profile.profileImage.data.data) {
+                // Buffer to base64
+                const base64 = bufferToBase64({ data: profile.profileImage.data.data });
+                img.src = `data:image/jpeg;base64,${base64}`;
+            } else if (profile.profileImage.url) {
+                // Direct URL from backend
+                img.src = profile.profileImage.url;
+            } else {
+                img.src = 'https://via.placeholder.com/180x200?text=No+Image';
+            }
         } else {
-            img.src = '';
+            img.src = 'https://via.placeholder.com/180x200?text=No+Image';
         }
         img.alt = profile?.fullName || user?.username || 'Profile';
 
@@ -153,7 +161,7 @@ END:VCARD
         const galleryDiv = document.getElementById('profileGallery');
         galleryDiv.innerHTML = '';
         if (profile?.gallery) {
-            profile.gallery.forEach(item => {
+            profile.gallery.forEach((item, idx) => {
                 if (item.type === 'video') {
                     galleryDiv.innerHTML += `
                         <div style="position: relative;">
@@ -169,13 +177,45 @@ END:VCARD
                 } else {
                     galleryDiv.innerHTML += `
                         <div>
-                            <img src="${item.url}" alt="${item.title || ''}" />
+                            <img src="${item.url}" alt="${item.title || ''}" class="gallery-img-popup" data-img-idx="${idx}" style="cursor:pointer;" />
                             <div style="font-size: 0.9rem; color: #333; text-align: center;">${item.title || ''}</div>
                         </div>
                     `;
                 }
             });
         }
+
+        // Add popup modal for gallery images
+        let popupModal = document.getElementById('galleryImageModal');
+        if (!popupModal) {
+            popupModal = document.createElement('div');
+            popupModal.id = 'galleryImageModal';
+            popupModal.className = 'modal fade';
+            popupModal.tabIndex = -1;
+            popupModal.innerHTML = `
+                <div class="modal-dialog modal-dialog-centered">
+                  <div class="modal-content bg-transparent border-0">
+                    <div class="modal-body p-0 d-flex justify-content-center align-items-center" style="position:relative;">
+                      <img id="galleryModalImg" src="" alt="Enlarged" style="max-width:90vw; max-height:80vh; border-radius:1rem; box-shadow:0 2px 16px rgba(0,0,0,0.25); background:#fff;" />
+                      <button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close" style="z-index:2;"></button>
+                    </div>
+                  </div>
+                </div>
+            `;
+            document.body.appendChild(popupModal);
+        }
+        // Attach click event to gallery images
+        setTimeout(() => {
+            document.querySelectorAll('.gallery-img-popup').forEach(img => {
+                img.addEventListener('click', function() {
+                    const src = this.getAttribute('src');
+                    const modalImg = document.getElementById('galleryModalImg');
+                    modalImg.src = src;
+                    const modal = new bootstrap.Modal(document.getElementById('galleryImageModal'));
+                    modal.show();
+                });
+            });
+        }, 100);
 
         // Recent activity
         const activityDiv = document.getElementById('profileRecentActivity');
