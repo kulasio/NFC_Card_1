@@ -154,12 +154,13 @@ function populateCard(apiData) {
                     linkElement.target = '_blank';
                     linkElement.innerHTML = `<i class="${icon}"></i>`;
                     
-                    // Add click tracking for social links
+                    // Add click tracking for social links with specific platform name
                     linkElement.addEventListener('click', function() {
                         if (card?._id) {
+                            const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
                             logUserAction(card._id, {
                                 type: 'social_link_click',
-                                label: `${platform} Link Clicked`,
+                                label: `${platformName} Profile Clicked`,
                                 url: url
                             });
                         }
@@ -186,11 +187,12 @@ function populateCard(apiData) {
         const saveBtn = document.getElementById('saveContactBtn');
         if (saveBtn) {
             saveBtn.onclick = function() {
-                // Log the contact save action
+                // Log the contact save action with person's name
                 if (card?._id) {
+                    const personName = profile?.fullName || user?.username || 'Unknown';
                     logUserAction(card._id, {
                         type: 'contact_save',
-                        label: 'Contact Saved',
+                        label: `Contact Saved: "${personName}"`,
                         url: ''
                     });
                 }
@@ -223,11 +225,12 @@ END:VCARD
         const bookNowBtn = document.getElementById('bookNowBtn');
         if (bookNowBtn) {
             bookNowBtn.onclick = function() {
-                // Log the booking modal action
+                // Log the booking modal action with person's name
                 if (card?._id) {
+                    const personName = profile?.fullName || user?.username || 'Unknown';
                     logUserAction(card._id, {
                         type: 'booking_modal_open',
-                        label: 'Booking Modal Opened',
+                        label: `Booking Modal Opened for: "${personName}"`,
                         url: ''
                     });
                 }
@@ -242,11 +245,12 @@ END:VCARD
             bookNowForm.onsubmit = function(e) {
                 e.preventDefault();
                 
-                // Log the booking submission action
+                // Log the booking submission action with person's name
                 if (card?._id) {
+                    const personName = profile?.fullName || user?.username || 'Unknown';
                     logUserAction(card._id, {
                         type: 'booking_submitted',
-                        label: 'Meeting Request Submitted',
+                        label: `Meeting Request Submitted for: "${personName}"`,
                         url: ''
                     });
                 }
@@ -271,12 +275,12 @@ END:VCARD
                 linkElement.className = 'btn';
                 linkElement.textContent = link.label;
                 
-                // Add click tracking for featured links
+                // Add click tracking for featured links with specific link name
                 linkElement.addEventListener('click', function() {
                     if (card?._id) {
                         logUserAction(card._id, {
                             type: 'featured_link_click',
-                            label: `Featured Link: ${link.label}`,
+                            label: `Featured Link Clicked: "${link.label}"`,
                             url: link.url
                         });
                     }
@@ -292,6 +296,18 @@ END:VCARD
                 moreBtn.setAttribute('data-bs-target', '#addFeaturedModal');
                 moreBtn.title = 'Show more featured links';
                 moreBtn.textContent = `+${profile.featuredLinks.length - 3} more`;
+                
+                // Add click tracking for "show more" button
+                moreBtn.addEventListener('click', function() {
+                    if (card?._id) {
+                        logUserAction(card._id, {
+                            type: 'featured_links_modal_open',
+                            label: 'Featured Links Modal Opened',
+                            url: ''
+                        });
+                    }
+                });
+                
                 featuredDiv.appendChild(moreBtn);
             }
         }
@@ -305,12 +321,12 @@ END:VCARD
                 linkElement.className = 'btn btn-light';
                 linkElement.textContent = link.label;
                 
-                // Add click tracking for modal featured links
+                // Add click tracking for modal featured links with specific link name
                 linkElement.addEventListener('click', function() {
                     if (card?._id) {
                         logUserAction(card._id, {
                             type: 'featured_link_click',
-                            label: `Featured Link (Modal): ${link.label}`,
+                            label: `Featured Link Clicked (Modal): "${link.label}"`,
                             url: link.url
                         });
                     }
@@ -326,24 +342,56 @@ END:VCARD
         if (profile?.gallery) {
             profile.gallery.forEach((item, idx) => {
                 if (item.type === 'video') {
-                    galleryDiv.innerHTML += `
-                        <div style="position: relative;">
-                            <a href="${item.url}" target="_blank">
-                                <img src="${item.thumbnail || ''}" alt="${item.title || ''}" />
-                                <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; color: white; background: rgba(0,0,0,0.5); border-radius: 50%; padding: 0.3em 0.45em;">
-                                    <i class='fas fa-play'></i>
-                                </span>
-                            </a>
-                            <div style="font-size: 0.9rem; color: #333; text-align: center;">${item.title || ''}</div>
-                        </div>
+                    const videoContainer = document.createElement('div');
+                    videoContainer.style.position = 'relative';
+                    
+                    const videoLink = document.createElement('a');
+                    videoLink.href = item.url;
+                    videoLink.target = '_blank';
+                    videoLink.innerHTML = `
+                        <img src="${item.thumbnail || ''}" alt="${item.title || ''}" />
+                        <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; color: white; background: rgba(0,0,0,0.5); border-radius: 50%; padding: 0.3em 0.45em;">
+                            <i class='fas fa-play'></i>
+                        </span>
                     `;
+                    
+                    // Add click tracking for video links
+                    videoLink.addEventListener('click', function() {
+                        if (card?._id) {
+                            const videoTitle = item.title || `Video ${idx + 1}`;
+                            logUserAction(card._id, {
+                                type: 'gallery_video_click',
+                                label: `Video Clicked: "${videoTitle}"`,
+                                url: item.url
+                            });
+                        }
+                    });
+                    
+                    videoContainer.appendChild(videoLink);
+                    
+                    const videoTitle = document.createElement('div');
+                    videoTitle.style.cssText = 'font-size: 0.9rem; color: #333; text-align: center;';
+                    videoTitle.textContent = item.title || '';
+                    videoContainer.appendChild(videoTitle);
+                    
+                    galleryDiv.appendChild(videoContainer);
                 } else {
-                    galleryDiv.innerHTML += `
-                        <div>
-                            <img src="${item.url}" alt="${item.title || ''}" class="gallery-img-popup" data-img-idx="${idx}" style="cursor:pointer;" />
-                            <div style="font-size: 0.9rem; color: #333; text-align: center;">${item.title || ''}</div>
-                        </div>
-                    `;
+                    const imageContainer = document.createElement('div');
+                    
+                    const imageElement = document.createElement('img');
+                    imageElement.src = item.url;
+                    imageElement.alt = item.title || '';
+                    imageElement.className = 'gallery-img-popup';
+                    imageElement.setAttribute('data-img-idx', idx);
+                    imageElement.style.cursor = 'pointer';
+                    
+                    const imageTitle = document.createElement('div');
+                    imageTitle.style.cssText = 'font-size: 0.9rem; color: #333; text-align: center;';
+                    imageTitle.textContent = item.title || '';
+                    
+                    imageContainer.appendChild(imageElement);
+                    imageContainer.appendChild(imageTitle);
+                    galleryDiv.appendChild(imageContainer);
                 }
             });
         }
@@ -404,11 +452,12 @@ END:VCARD
         setTimeout(() => {
             document.querySelectorAll('.gallery-img-popup').forEach((img, idx) => {
                 img.addEventListener('click', function() {
-                    // Log gallery image click
+                    // Log gallery image click with specific image name
                     if (card?._id) {
+                        const imageTitle = galleryTitles[idx] || `Image ${idx + 1}`;
                         logUserAction(card._id, {
                             type: 'gallery_image_click',
-                            label: `Gallery Image: ${galleryTitles[idx] || 'Untitled'}`,
+                            label: `Gallery Image Clicked: "${imageTitle}"`,
                             url: galleryImages[idx]
                         });
                     }
