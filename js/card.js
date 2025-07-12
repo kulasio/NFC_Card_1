@@ -12,9 +12,90 @@ function bufferToBase64(bufferObj) {
     return btoa(String.fromCharCode(...bufferObj.data));
 }
 
+// Analytics and Tap Tracking Functions
+const API_BASE_URL = 'https://onetapp-backend.onrender.com';
+
+// Generate session ID for analytics
+function generateSessionId() {
+    return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+}
+
+// Get device and browser info
+function getDeviceInfo() {
+    return {
+        userAgent: navigator.userAgent,
+        language: navigator.language,
+        platform: navigator.platform,
+        screenResolution: `${screen.width}x${screen.height}`,
+        viewport: `${window.innerWidth}x${window.innerHeight}`
+    };
+}
+
+// Log tap event to backend
+async function logTap(cardId, eventId = null) {
+    try {
+        const deviceInfo = getDeviceInfo();
+        const tapData = {
+            cardId: cardId,
+            eventId: eventId,
+            timestamp: new Date(),
+            ip: '', // Will be captured by backend
+            geo: {}, // Will be captured by backend
+            userAgent: deviceInfo.userAgent,
+            sessionId: generateSessionId(),
+            actions: [{
+                type: 'card_view',
+                label: 'Card Viewed',
+                timestamp: new Date()
+            }]
+        };
+
+        await fetch(`${API_BASE_URL}/api/taps`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(tapData)
+        });
+        console.log('Tap event logged successfully');
+    } catch (error) {
+        console.log('Tap logging failed (non-critical):', error);
+    }
+}
+
+// Log user action to backend
+async function logUserAction(cardId, actionData) {
+    try {
+        const deviceInfo = getDeviceInfo();
+        const actionLog = {
+            cardId: cardId,
+            timestamp: new Date(),
+            userAgent: deviceInfo.userAgent,
+            sessionId: generateSessionId(),
+            actions: [{
+                type: actionData.type,
+                label: actionData.label,
+                url: actionData.url || '',
+                timestamp: new Date()
+            }]
+        };
+
+        await fetch(`${API_BASE_URL}/api/taps/action`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(actionLog)
+        });
+        console.log('User action logged successfully');
+    } catch (error) {
+        console.log('Action logging failed (non-critical):', error);
+    }
+}
+
 // Fetch card data from backend
 async function fetchCardData(cardUid) {
-    const res = await fetch(`https://onetapp-backend.onrender.com/api/cards/dynamic/${cardUid}`);
+    const res = await fetch(`${API_BASE_URL}/api/cards/dynamic/${cardUid}`);
     if (!res.ok) throw new Error('Card not found');
     return await res.json();
 }
@@ -68,7 +149,23 @@ function populateCard(apiData) {
                         website: 'fas fa-globe',
                     };
                     const icon = iconMap[platform] || 'fas fa-link';
-                    socialLinksDiv.innerHTML += `<a href="${url}" target="_blank"><i class="${icon}"></i></a>`;
+                    const linkElement = document.createElement('a');
+                    linkElement.href = url;
+                    linkElement.target = '_blank';
+                    linkElement.innerHTML = `<i class="${icon}"></i>`;
+                    
+                    // Add click tracking for social links
+                    linkElement.addEventListener('click', function() {
+                        if (card?._id) {
+                            logUserAction(card._id, {
+                                type: 'social_link_click',
+                                label: `${platform} Link Clicked`,
+                                url: url
+                            });
+                        }
+                    });
+                    
+                    socialLinksDiv.appendChild(linkElement);
                 }
             }
         }
@@ -89,6 +186,15 @@ function populateCard(apiData) {
         const saveBtn = document.getElementById('saveContactBtn');
         if (saveBtn) {
             saveBtn.onclick = function() {
+                // Log the contact save action
+                if (card?._id) {
+                    logUserAction(card._id, {
+                        type: 'contact_save',
+                        label: 'Contact Saved',
+                        url: ''
+                    });
+                }
+                
                 const vcard = `
 BEGIN:VCARD
 VERSION:3.0
@@ -117,6 +223,14 @@ END:VCARD
         const bookNowBtn = document.getElementById('bookNowBtn');
         if (bookNowBtn) {
             bookNowBtn.onclick = function() {
+                // Log the booking modal action
+                if (card?._id) {
+                    logUserAction(card._id, {
+                        type: 'booking_modal_open',
+                        label: 'Booking Modal Opened',
+                        url: ''
+                    });
+                }
                 const modal = new bootstrap.Modal(document.getElementById('bookNowModal'));
                 modal.show();
             };
@@ -127,6 +241,16 @@ END:VCARD
         if (bookNowForm) {
             bookNowForm.onsubmit = function(e) {
                 e.preventDefault();
+                
+                // Log the booking submission action
+                if (card?._id) {
+                    logUserAction(card._id, {
+                        type: 'booking_submitted',
+                        label: 'Meeting Request Submitted',
+                        url: ''
+                    });
+                }
+                
                 document.getElementById('bookNowThankYou').style.display = '';
                 setTimeout(() => {
                     const modal = bootstrap.Modal.getInstance(document.getElementById('bookNowModal'));
@@ -142,10 +266,33 @@ END:VCARD
         featuredDiv.innerHTML = '';
         if (profile?.featuredLinks) {
             profile.featuredLinks.slice(0, 3).forEach(link => {
-                featuredDiv.innerHTML += `<a href="${link.url}" class="btn">${link.label}</a>`;
+                const linkElement = document.createElement('a');
+                linkElement.href = link.url;
+                linkElement.className = 'btn';
+                linkElement.textContent = link.label;
+                
+                // Add click tracking for featured links
+                linkElement.addEventListener('click', function() {
+                    if (card?._id) {
+                        logUserAction(card._id, {
+                            type: 'featured_link_click',
+                            label: `Featured Link: ${link.label}`,
+                            url: link.url
+                        });
+                    }
+                });
+                
+                featuredDiv.appendChild(linkElement);
             });
             if (profile.featuredLinks.length > 3) {
-                featuredDiv.innerHTML += `<button class="badge bg-light text-dark px-3 py-2 border-0" style="font-size:0.97rem; border-radius:0.7rem; display: flex; align-items: center; cursor:pointer;" data-bs-toggle="modal" data-bs-target="#addFeaturedModal" title="Show more featured links">+${profile.featuredLinks.length - 3} more</button>`;
+                const moreBtn = document.createElement('button');
+                moreBtn.className = 'badge bg-light text-dark px-3 py-2 border-0';
+                moreBtn.style.cssText = 'font-size:0.97rem; border-radius:0.7rem; display: flex; align-items: center; cursor:pointer;';
+                moreBtn.setAttribute('data-bs-toggle', 'modal');
+                moreBtn.setAttribute('data-bs-target', '#addFeaturedModal');
+                moreBtn.title = 'Show more featured links';
+                moreBtn.textContent = `+${profile.featuredLinks.length - 3} more`;
+                featuredDiv.appendChild(moreBtn);
             }
         }
         // All featured links in modal
@@ -153,7 +300,23 @@ END:VCARD
         allFeaturedDiv.innerHTML = '';
         if (profile?.featuredLinks) {
             profile.featuredLinks.forEach(link => {
-                allFeaturedDiv.innerHTML += `<a href="${link.url}" class="btn btn-light">${link.label}</a>`;
+                const linkElement = document.createElement('a');
+                linkElement.href = link.url;
+                linkElement.className = 'btn btn-light';
+                linkElement.textContent = link.label;
+                
+                // Add click tracking for modal featured links
+                linkElement.addEventListener('click', function() {
+                    if (card?._id) {
+                        logUserAction(card._id, {
+                            type: 'featured_link_click',
+                            label: `Featured Link (Modal): ${link.label}`,
+                            url: link.url
+                        });
+                    }
+                });
+                
+                allFeaturedDiv.appendChild(linkElement);
             });
         }
 
@@ -241,6 +404,15 @@ END:VCARD
         setTimeout(() => {
             document.querySelectorAll('.gallery-img-popup').forEach((img, idx) => {
                 img.addEventListener('click', function() {
+                    // Log gallery image click
+                    if (card?._id) {
+                        logUserAction(card._id, {
+                            type: 'gallery_image_click',
+                            label: `Gallery Image: ${galleryTitles[idx] || 'Untitled'}`,
+                            url: galleryImages[idx]
+                        });
+                    }
+                    
                     const modalImg = document.getElementById('galleryModalImg');
                     modalImg.style.transform = 'scale(0.85)';
                     modalImg.style.opacity = '0';
@@ -309,7 +481,14 @@ END:VCARD
     }
     try {
         const apiData = await fetchCardData(cardUid);
-        console.log(apiData); // <-- Add this line
+        console.log(apiData);
+        
+        // Log the initial tap event
+        if (apiData.card?._id) {
+            const eventId = getQueryParam('eventId'); // Optional event tracking
+            await logTap(apiData.card._id, eventId);
+        }
+        
         populateCard(apiData);
     } catch (err) {
         document.body.innerHTML = '<div style="color:#333;text-align:center;margin-top:3rem;font-size:1.5rem;">Card not found or error loading card data.</div>';
