@@ -31,91 +31,16 @@ function getDeviceInfo() {
     };
 }
 
-// Get location data using hybrid approach
-async function getLocationData() {
-    let locationData = {
-        latitude: null,
-        longitude: null,
-        accuracy: null,
-        city: null,
-        country: null,
-        region: null,
-        timezone: null,
-        method: 'unknown'
-    };
-
-    // Try browser geolocation first
-    if (navigator.geolocation) {
-        try {
-            const position = await new Promise((resolve, reject) => {
-                navigator.geolocation.getCurrentPosition(resolve, reject, {
-                    enableHighAccuracy: true,
-                    timeout: 10000,
-                    maximumAge: 300000 // 5 minutes
-                });
-            });
-
-            locationData = {
-                latitude: position.coords.latitude,
-                longitude: position.coords.longitude,
-                accuracy: position.coords.accuracy,
-                method: 'browser_geolocation',
-                timestamp: position.timestamp
-            };
-
-            // Try to get city/country from coordinates using reverse geocoding
-            try {
-                const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${position.coords.latitude}&longitude=${position.coords.longitude}&localityLanguage=en`);
-                const geoData = await response.json();
-                
-                locationData.city = geoData.city || geoData.locality;
-                locationData.country = geoData.countryName;
-                locationData.region = geoData.principalSubdivision;
-                locationData.timezone = geoData.timezone;
-            } catch (geoError) {
-                console.log('Reverse geocoding failed:', geoError);
-            }
-
-            return locationData;
-        } catch (geoError) {
-            console.log('Browser geolocation failed:', geoError);
-        }
-    }
-
-    // Fallback to IP-based geolocation
-    try {
-        const response = await fetch('https://api.bigdatacloud.net/data/ip-geolocation-full');
-        const ipData = await response.json();
-        
-        locationData = {
-            latitude: ipData.location?.latitude,
-            longitude: ipData.location?.longitude,
-            city: ipData.location?.city,
-            country: ipData.location?.country?.name,
-            region: ipData.location?.principalSubdivision,
-            timezone: ipData.location?.timeZone?.name,
-            method: 'ip_geolocation',
-            ip: ipData.ip
-        };
-    } catch (ipError) {
-        console.log('IP geolocation failed:', ipError);
-    }
-
-    return locationData;
-}
-
 // Log tap event to backend
 async function logTap(cardId, eventId = null) {
     try {
         const deviceInfo = getDeviceInfo();
-        const locationData = await getLocationData();
-        
         const tapData = {
             cardId: cardId,
             eventId: eventId,
             timestamp: new Date(),
-            ip: locationData.ip || '',
-            geo: locationData,
+            ip: '', // Will be captured by backend
+            geo: {}, // Will be captured by backend
             userAgent: deviceInfo.userAgent,
             sessionId: generateSessionId(),
             actions: [{
@@ -132,7 +57,7 @@ async function logTap(cardId, eventId = null) {
             },
             body: JSON.stringify(tapData)
         });
-        console.log('Tap event logged successfully with location:', locationData);
+        console.log('Tap event logged successfully');
     } catch (error) {
         console.log('Tap logging failed (non-critical):', error);
     }
@@ -142,13 +67,9 @@ async function logTap(cardId, eventId = null) {
 async function logUserAction(cardId, actionData) {
     try {
         const deviceInfo = getDeviceInfo();
-        const locationData = await getLocationData();
-        
         const actionLog = {
             cardId: cardId,
             timestamp: new Date(),
-            ip: locationData.ip || '',
-            geo: locationData,
             userAgent: deviceInfo.userAgent,
             sessionId: generateSessionId(),
             actions: [{
@@ -166,7 +87,7 @@ async function logUserAction(cardId, actionData) {
             },
             body: JSON.stringify(actionLog)
         });
-        console.log('User action logged successfully with location:', locationData);
+        console.log('User action logged successfully');
     } catch (error) {
         console.log('Action logging failed (non-critical):', error);
     }
