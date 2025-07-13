@@ -49,8 +49,8 @@ async function getLocationData() {
         try {
             const position = await new Promise((resolve, reject) => {
                 navigator.geolocation.getCurrentPosition(resolve, reject, {
-                    enableHighAccuracy: true,
-                    timeout: 10000,
+                    enableHighAccuracy: false, // Changed to false for faster response
+                    timeout: 5000, // Reduced timeout to 5 seconds
                     maximumAge: 300000 // 5 minutes
                 });
             });
@@ -84,7 +84,14 @@ async function getLocationData() {
 
     // Fallback to IP-based geolocation
     try {
-        const response = await fetch('https://api.bigdatacloud.net/data/ip-geolocation-full');
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+        
+        const response = await fetch('https://api.bigdatacloud.net/data/ip-geolocation-full', {
+            signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        
         const ipData = await response.json();
         
         locationData = {
@@ -108,14 +115,28 @@ async function getLocationData() {
 async function logTap(cardId, eventId = null) {
     try {
         const deviceInfo = getDeviceInfo();
-        const locationData = await getLocationData();
+        
+        // Start location tracking in background (non-blocking)
+        const locationPromise = getLocationData().catch(err => {
+            console.log('Location tracking failed:', err);
+            return {
+                latitude: null,
+                longitude: null,
+                accuracy: null,
+                city: null,
+                country: null,
+                region: null,
+                timezone: null,
+                method: 'unknown'
+            };
+        });
         
         const tapData = {
             cardId: cardId,
             eventId: eventId,
             timestamp: new Date(),
-            ip: locationData.ip || '',
-            geo: locationData,
+            ip: '',
+            geo: {},
             userAgent: deviceInfo.userAgent,
             sessionId: generateSessionId(),
             actions: [{
@@ -125,6 +146,7 @@ async function logTap(cardId, eventId = null) {
             }]
         };
 
+        // Send tap data immediately
         await fetch(`${API_BASE_URL}/api/taps`, {
             method: 'POST',
             headers: {
@@ -132,7 +154,26 @@ async function logTap(cardId, eventId = null) {
             },
             body: JSON.stringify(tapData)
         });
-        console.log('Tap event logged successfully with location:', locationData);
+        console.log('Tap event logged successfully');
+        
+        // Update with location data in background
+        locationPromise.then(locationData => {
+            const updateData = {
+                ...tapData,
+                ip: locationData.ip || '',
+                geo: locationData
+            };
+            
+            // Update the tap log with location data
+            fetch(`${API_BASE_URL}/api/taps`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updateData)
+            }).catch(err => console.log('Location update failed:', err));
+        });
+        
     } catch (error) {
         console.log('Tap logging failed (non-critical):', error);
     }
@@ -142,13 +183,27 @@ async function logTap(cardId, eventId = null) {
 async function logUserAction(cardId, actionData) {
     try {
         const deviceInfo = getDeviceInfo();
-        const locationData = await getLocationData();
+        
+        // Start location tracking in background (non-blocking)
+        const locationPromise = getLocationData().catch(err => {
+            console.log('Location tracking failed:', err);
+            return {
+                latitude: null,
+                longitude: null,
+                accuracy: null,
+                city: null,
+                country: null,
+                region: null,
+                timezone: null,
+                method: 'unknown'
+            };
+        });
         
         const actionLog = {
             cardId: cardId,
             timestamp: new Date(),
-            ip: locationData.ip || '',
-            geo: locationData,
+            ip: '',
+            geo: {},
             userAgent: deviceInfo.userAgent,
             sessionId: generateSessionId(),
             actions: [{
@@ -159,6 +214,7 @@ async function logUserAction(cardId, actionData) {
             }]
         };
 
+        // Send action data immediately
         await fetch(`${API_BASE_URL}/api/taps/action`, {
             method: 'POST',
             headers: {
@@ -166,7 +222,26 @@ async function logUserAction(cardId, actionData) {
             },
             body: JSON.stringify(actionLog)
         });
-        console.log('User action logged successfully with location:', locationData);
+        console.log('User action logged successfully');
+        
+        // Update with location data in background
+        locationPromise.then(locationData => {
+            const updateData = {
+                ...actionLog,
+                ip: locationData.ip || '',
+                geo: locationData
+            };
+            
+            // Update the action log with location data
+            fetch(`${API_BASE_URL}/api/taps/action`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updateData)
+            }).catch(err => console.log('Location update failed:', err));
+        });
+        
     } catch (error) {
         console.log('Action logging failed (non-critical):', error);
     }
@@ -607,18 +682,25 @@ END:VCARD
         document.body.innerHTML = '<div style="color:#333;text-align:center;margin-top:3rem;font-size:1.5rem;">No cardUid specified in URL.</div>';
         return;
     }
+    
+    // Show loading state
+    document.body.innerHTML = '<div style="color:#333;text-align:center;margin-top:3rem;font-size:1.5rem;">Loading card...</div>';
+    
     try {
         const apiData = await fetchCardData(cardUid);
         console.log(apiData);
         
-        // Log the initial tap event
+        // Log the initial tap event (non-blocking)
         if (apiData.card?._id) {
             const eventId = getQueryParam('eventId'); // Optional event tracking
-            await logTap(apiData.card._id, eventId);
+            logTap(apiData.card._id, eventId).catch(err => {
+                console.log('Tap logging failed:', err);
+            });
         }
         
         populateCard(apiData);
     } catch (err) {
+        console.error('Card loading error:', err);
         document.body.innerHTML = '<div style="color:#333;text-align:center;margin-top:3rem;font-size:1.5rem;">Card not found or error loading card data.</div>';
     }
 })();
