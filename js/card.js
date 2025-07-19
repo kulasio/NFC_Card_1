@@ -570,7 +570,7 @@ END:VCARD
                         const imageTitle = galleryTitles[idx] || `Image ${idx + 1}`;
                         logUserAction(card._id, {
                             type: 'gallery_image_click',
-                            label: `Gallery Image Clicked: "${imageTitle}"`,
+                            label: imageTitle,
                             url: galleryImages[idx]
                         });
                     }
